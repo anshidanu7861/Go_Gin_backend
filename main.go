@@ -1,15 +1,20 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/anshidmattara7861/Go-Gin-backend/database"
 	"github.com/anshidmattara7861/Go-Gin-backend/handlers"
 	"github.com/anshidmattara7861/Go-Gin-backend/managers"
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
+func init() {
+	fmt.Println(database.DB, "show this ")
+	// database.Initialize()
+}
 
-	database.Initialize()
+func main() {
 
 	router := gin.Default()
 
