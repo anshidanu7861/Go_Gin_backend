@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/anshidmattara7861/Go-Gin-backend/database"
@@ -27,6 +28,20 @@ func (userHandler *UserHandler) RegisterUserApis(r *gin.Engine) {
 }
 
 func (userHandler *UserHandler) Create(ctx *gin.Context) {
+
+	var userData struct {
+		fullName string `json:"full_name"`
+		email    string `json: "email"`
+	}
+
+	err := ctx.BindJSON(userData)
+
+	fmt.Println(userData.email)
+	fmt.Println(userData.fullName)
+
+	if err != nil {
+		fmt.Println("filed to bind data")
+	}
 
 	database.DB.Create(&models.User{FullName: "Tom", Email: "example@gmail.com"})
 

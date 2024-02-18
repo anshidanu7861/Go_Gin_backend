@@ -11,7 +11,7 @@ import (
 
 func init() {
 	fmt.Println(database.DB, "show this ")
-	// database.Initialize()
+	database.Initialize()
 }
 
 func main() {
