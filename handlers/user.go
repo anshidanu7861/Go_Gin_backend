@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/anshidmattara7861/Go-Gin-backend/database"
+	"github.com/anshidmattara7861/Go-Gin-backend/common"
 	"github.com/anshidmattara7861/Go-Gin-backend/managers"
-	"github.com/anshidmattara7861/Go-Gin-backend/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,23 +28,19 @@ func (userHandler *UserHandler) RegisterUserApis(r *gin.Engine) {
 
 func (userHandler *UserHandler) Create(ctx *gin.Context) {
 
-	var userData struct {
-		fullName string `json:"full_name"`
-		email    string `json: "email"`
-	}
+	userData := common.NewUserCreationInput()
 
-	err := ctx.BindJSON(userData)
-
-	fmt.Println(userData.email)
-	fmt.Println(userData.fullName)
+	err := ctx.BindJSON(&userData)
 
 	if err != nil {
 		fmt.Println("filed to bind data")
 	}
 
-	database.DB.Create(&models.User{FullName: "Tom", Email: "example@gmail.com"})
+	newUser, err := userHandler.UserManager.Create(userData)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "api version",
-	})
+	if err != nil {
+		fmt.Println("failed to creations")
+	}
+
+	ctx.JSON(http.StatusOK, newUser)
 }
