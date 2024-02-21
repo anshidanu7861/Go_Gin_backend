@@ -26,3 +26,21 @@ func (userMgr *UserManager) Create(userData *common.UserCreationInput) (*models.
 
 	return newUser, nil
 }
+
+func (userMgr *UserManager) List() ([]models.User, error) {
+
+	users := []models.User{}
+
+	database.DB.Find(&users)
+
+	return users, nil
+}
+
+func (userMgr *UserManager) Details(userId string) (models.User, error) {
+
+	user := models.User{}
+
+	database.DB.First(&user, userId)
+
+	return user, nil
+}
