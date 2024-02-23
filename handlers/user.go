@@ -26,6 +26,7 @@ func (userHandler *UserHandler) RegisterUserApis(r *gin.Engine) {
 	userGroup.POST("", userHandler.Create)
 	userGroup.GET("", userHandler.List)
 	userGroup.GET(":userId/", userHandler.Details)
+	userGroup.DELETE(":userId/", userHandler.Delete)
 }
 
 func (userHandler *UserHandler) Create(ctx *gin.Context) {
@@ -63,4 +64,21 @@ func (userHandler *UserHandler) Details(ctx *gin.Context) {
 		fmt.Println("failed to find users")
 	}
 	ctx.JSON(http.StatusOK, userDetails)
+}
+
+func (userHandler *UserHandler) Delete(ctx *gin.Context) {
+
+	userId, ok := ctx.Params.Get("userId")
+
+	if !ok {
+		fmt.Println("Invalid userId")
+	}
+
+	err := userHandler.UserManager.Delete(userId)
+	if err != nil {
+		fmt.Println("failed to find users")
+	}
+	
+	
+	common.SuccessMessage(ctx, "Deleted successfully")
 }
