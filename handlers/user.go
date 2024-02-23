@@ -33,11 +33,13 @@ func (userHandler *UserHandler) Create(ctx *gin.Context) {
 	userData := common.NewUserCreationInput()
 	err := ctx.BindJSON(&userData)
 	if err != nil {
-		fmt.Println("filed to bind data")
+		common.FailMessage(ctx, "failed to bind data")
+		return
 	}
 	newUser, err := userHandler.UserManager.Create(userData)
 	if err != nil {
-		fmt.Println("failed to creations")
+		common.FailMessage(ctx, "failed to creations")
+		return
 	}
 	ctx.JSON(http.StatusOK, newUser)
 }
@@ -46,7 +48,8 @@ func (userHandler *UserHandler) List(ctx *gin.Context) {
 
 	allUsers, err := userHandler.UserManager.List()
 	if err != nil {
-		fmt.Println("failed to find users")
+		common.FailMessage(ctx, "failed to find users")
+		return 
 	}
 	ctx.JSON(http.StatusOK, allUsers)
 }
@@ -56,13 +59,17 @@ func (userHandler *UserHandler) Details(ctx *gin.Context) {
 	userId, ok := ctx.Params.Get("userId")
 
 	if !ok {
-		fmt.Println("Invalid userId")
+		common.FailMessage(ctx, "Invalid user id")
+		return 
 	}
 
 	userDetails, err := userHandler.UserManager.Details(userId)
-	if err != nil {
-		fmt.Println("failed to find users")
+
+	if userDetails.ID == 0 {
+		common.FailMessage(ctx, "user not found")
+		return
 	}
+
 	ctx.JSON(http.StatusOK, userDetails)
 }
 
@@ -71,7 +78,8 @@ func (userHandler *UserHandler) Delete(ctx *gin.Context) {
 	userId, ok := ctx.Params.Get("userId")
 
 	if !ok {
-		fmt.Println("Invalid userId")
+		common.FailMessage(ctx, "invalid user id")
+		return
 	}
 
 	err := userHandler.UserManager.Delete(userId)
