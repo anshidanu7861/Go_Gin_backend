@@ -11,32 +11,35 @@ import (
 
 type UserHandler struct {
 	groupName   string
-	UserManager *managers.UserManager
+	UserManager managers.UserManager
 }
 
-func NewUserHandlerFrom(userManager *managers.UserManager) *UserHandler {
+func NewUserHandlerFrom(userManager managers.UserManager) *UserHandler {
 	return &UserHandler{
 		"api/users",
 		userManager,
 	}
 }
 
-func (userHandler *UserHandler) RegisterUserApis(r *gin.Engine) {
-	userGroup := r.Group(userHandler.groupName)
-	userGroup.POST("", userHandler.Create)
-	userGroup.GET("", userHandler.List)
-	userGroup.GET(":userId/", userHandler.Details)
-	userGroup.DELETE(":userId/", userHandler.Delete)
+func (handlers *UserHandler) RegisterUserApis(r *gin.Engine) {
+	userGroup := r.Group(handlers.groupName)
+	userGroup.POST("", handlers.Create)
+	userGroup.GET("", handlers.List)
+	userGroup.GET(":userId/", handlers.Details)
+	userGroup.DELETE(":userId/", handlers.Delete)
+	userGroup.PATCH(":userId/", handlers.Update)
 }
 
-func (userHandler *UserHandler) Create(ctx *gin.Context) {
+
+// USER CREATION
+func (handlers *UserHandler) Create(ctx *gin.Context) {
 	userData := common.NewUserCreationInput()
 	err := ctx.BindJSON(&userData)
 	if err != nil {
 		common.FailMessage(ctx, "failed to bind data")
 		return
 	}
-	newUser, err := userHandler.UserManager.Create(userData)
+	newUser, err := handlers.UserManager.Create(userData)
 	if err != nil {
 		common.FailMessage(ctx, "failed to creations")
 		return
@@ -44,9 +47,10 @@ func (userHandler *UserHandler) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, newUser)
 }
 
-func (userHandler *UserHandler) List(ctx *gin.Context) {
+// ALL USERS LIST
+func (handlers *UserHandler) List(ctx *gin.Context) {
 
-	allUsers, err := userHandler.UserManager.List()
+	allUsers, err := handlers.UserManager.List()
 	if err != nil {
 		common.FailMessage(ctx, "failed to find users")
 		return 
@@ -54,7 +58,9 @@ func (userHandler *UserHandler) List(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, allUsers)
 }
 
-func (userHandler *UserHandler) Details(ctx *gin.Context) {
+
+// USER SINGLE DETAILS
+func (handlers *UserHandler) Details(ctx *gin.Context) {
 
 	userId, ok := ctx.Params.Get("userId")
 
@@ -63,7 +69,11 @@ func (userHandler *UserHandler) Details(ctx *gin.Context) {
 		return 
 	}
 
-	userDetails, err := userHandler.UserManager.Details(userId)
+	userDetails, err := handlers.UserManager.Details(userId)
+
+	if err != nil {
+		fmt.Println(err, "get error")
+	}
 
 	if userDetails.ID == 0 {
 		common.FailMessage(ctx, "user not found")
@@ -73,7 +83,9 @@ func (userHandler *UserHandler) Details(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, userDetails)
 }
 
-func (userHandler *UserHandler) Delete(ctx *gin.Context) {
+
+// DELETE USER
+func (handlers *UserHandler) Delete(ctx *gin.Context) {
 
 	userId, ok := ctx.Params.Get("userId")
 
@@ -82,7 +94,7 @@ func (userHandler *UserHandler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	err := userHandler.UserManager.Delete(userId)
+	err := handlers.UserManager.Delete(userId)
 	if err != nil {
 		fmt.Println("failed to find users")
 	}
@@ -90,3 +102,30 @@ func (userHandler *UserHandler) Delete(ctx *gin.Context) {
 	
 	common.SuccessMessage(ctx, "Deleted successfully")
 }
+
+// USER UPDATE
+func (handlers *UserHandler) Update(ctx *gin.Context) {
+	userData := common.NewUserUpdateInput()
+	err := ctx.BindJSON(&userData)
+	if err != nil {
+		common.FailMessage(ctx, "failed to bind data")
+		return
+	}
+
+	userId, ok := ctx.Params.Get("userId")
+
+	if !ok {
+		common.FailMessage(ctx, "invalid user id")
+		return
+	}
+	updateUser, err := handlers.UserManager.Update(userId,userData)
+
+
+	if err != nil {
+		common.FailMessage(ctx, "failed to update user")
+		return
+	}
+	
+	ctx.JSON(http.StatusOK, updateUser)
+}
+
